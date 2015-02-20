@@ -1,6 +1,7 @@
 import serial
 import time
 import usb
+import os
 
 from alphasign.interfaces import base
 
@@ -70,6 +71,7 @@ class USB(base.BaseInterface):
     self.debug = False
     self._handle = None
     self._conn = None
+    self.write_delay = float(os.environ.get('ALPHASIGN_WRITE_DELAY', 0))
 
   def _get_device(self):
     for bus in usb.busses():
@@ -112,6 +114,8 @@ class USB(base.BaseInterface):
     if self.debug:
       print "Writing packet: %s" % repr(packet)
     written = self._conn.bulkWrite(self._write_endpoint.address, str(packet))
+    if self.write_delay > 0:
+      time.sleep(self.write_delay)
     if self.debug:
       print "%d bytes written" % written
     self._conn.bulkWrite(self._write_endpoint.address, '')
